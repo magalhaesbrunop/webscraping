@@ -3,17 +3,15 @@ from bs4 import BeautifulSoup
 import csv
 import os
 
-def getting_html_table(html_table):
+def getting_html_table(html_table, file_name):
     if html_table:
         for index, _ in enumerate(html_table):
-            
+
             primeira_tabela = html_table[index]
 
-            
-            with open(f'./{file_name}/tabela_{index+1}.csv', 'w', newline='', encoding='utf-8') as csvfile:
+            with open(f'./produtos/{file_name}_tabela{index+1}.csv', 'w', newline='', encoding='utf-8') as csvfile:
                 writer = csv.writer(csvfile)
-
-                
+ 
                 for linha in primeira_tabela.find_all('tr'):
                     dados_linha = []
 
@@ -31,36 +29,39 @@ def remove_html_tags(html_text):
 
     return cleaned_text
 
+try:
+    os.mkdir(f'./produtos')
+except OSError:
+    pass
 
-nome_arquivo = 'products_urls_list.txt'
+nome_arquivo = './data/products_urls_list.txt'
 
 with open(nome_arquivo, 'r') as arquivo:
-    
+
     for index, linha in enumerate(arquivo):
-        
+
         url = linha.strip()
         response = requests.get(url)
-        
+
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
-            
+
             description = soup.find_all("div", class_="pr-md-0 pl-md-0 pl-lg-14 pl-0 col-12 col-md-6 col-lg-12")
             description = remove_html_tags(description)
-            
+
             product = soup.find_all("h1", class_="bsc-product-title")
             product = remove_html_tags(product)
             file_name = product.lower()[1:-1]
-            
+
             if "/" in file_name:
                 file_name = file_name.split('/')[0]
-            
-            file_name = ' '.join(file_name.split())
-            
-            try:
-                os.mkdir(f'./{file_name}')
-            except OSError:
-                pass
 
+            file_name = ' '.join(file_name.split())
+
+            if ' ' in file_name and ' ' in file_name:
+                    file_name = file_name.replace(' ', '-').replace('™', '')
+            else:
+                file_name = file_name.replace('™', '')
 
             tag = ["table", "section"]
             class_ = ["row-header-table", "row bsc-table", "row bsc-table bsc-row-color-table", "row bsc-table bsc-basic-table"]
@@ -68,8 +69,7 @@ with open(nome_arquivo, 'r') as arquivo:
             for _, tag in enumerate(tag):
                 for _, _class_ in enumerate(class_):
                     tables = soup.find_all(tag, class_=_class_)
-                    getting_html_table(tables)
-
+                    getting_html_table(tables, file_name)
 
             text_block = soup.find_all("section", class_="row bsc-text-block")
             character_list = ["[", "]", ",", " ", ", ", " , ", "\t", "\t\xa0", "\xa0\xa0" "\n", "'", "'"]
@@ -86,11 +86,7 @@ with open(nome_arquivo, 'r') as arquivo:
                     else:
                         new_text_block.append(element_index)
 
-
-            with open(f'./{file_name}/page_text{index}.txt', 'a') as file:
+            with open(f'./produtos/{file_name}_page.txt', 'a') as file:
                 file.write(f"{description[1:-1]}\n")
                 for _, element in enumerate(new_text_block):
                     file.write(f"{element}\n")
-                
-                
-                      
