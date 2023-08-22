@@ -90,4 +90,7 @@ with open(nome_arquivo, 'r') as arquivo:
             with open(f'./{file_name}/page_text{index}.txt', 'a') as file:
                 file.write(f"{description[1:-1]}\n")
                 for _, element in enumerate(new_text_block):
-                    file.write(f"{element}\n")           
+                    file.write(f"{element}\n")
+                
+                
+                      
